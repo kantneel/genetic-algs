@@ -8,8 +8,8 @@ import sys
 CROSSOVER = 0.7
 MUTATION = 0.001
 NUM_GENS = 1000
-POP_SIZE = 100
-EXP_LENGTH = 8
+POP_SIZE = 1000
+EXP_LENGTH = 6
 
 # Digit & Operator Dictionary
 directory = {
@@ -74,6 +74,9 @@ def run(target):
 				copy1 = genepool[roulette1]
 				copy2 = genepool[roulette2]
 				nextGenes.append(copy1[:digit] + copy2[digit:individualLength])
+				if random.random() < MUTATION:
+					digit2 = math.floor(random.random() * EXP_LENGTH * 4)
+					nextGenes[b] = nextGenes[b][:digit2] + str(1 - int(nextGenes[b][digit2])) + nextGenes[b][digit2 + 1 :]
 				nextScore = fitnessScore(nextGenes[b], target)
 				if nextScore is False:
 					end(nextGenes[b], target, a, True)
@@ -81,6 +84,9 @@ def run(target):
 					nextFitnesses.append(nextScore)
 			else: 
 				nextGenes.append(genepool[roulette1])
+				if random.random() < MUTATION:
+					digit2 = math.floor(random.random() * EXP_LENGTH * 4)
+					nextGenes[b] = nextGenes[b][:digit2] + str(1 - int(nextGenes[b][digit2])) + nextGenes[b][digit2 + 1 :]
 				nextScore = fitnessScore(nextGenes[b], target)
 		genepool = list(nextGenes)
 		fitnessScores = list(nextFitnesses)
@@ -123,14 +129,14 @@ def fitnessScore(individual, target):
 			lastOperator = directory[gene]
 	if target == total:
 		return False
-	return (1.0 / abs(target - total)) ** 2
+	return 1.0 / abs(target - total)
 
 def normalize(scores):
 	fitnessScores = list(scores)
 	total = math.fsum(fitnessScores)
-	popFitness.append(total / POP_SIZE)
 	for i in range(len(fitnessScores)):
 		fitnessScores[i] = fitnessScores[i] / total
+	popFitness.append(max(fitnessScores))
 	return fitnessScores
 
 def end(individual, target, gens, success):
@@ -145,13 +151,12 @@ def end(individual, target, gens, success):
 	message = ""
 	for i in range(EXP_LENGTH):
 		if individual[4 * i : 4 * (i + 1)] not in directory:
-			message += " NaN"
+			message += " n/a"
 		else:
 			message += " " + str(directory[individual[4 * i : 4 * (i + 1)]])
 	print(message[1:])
 	times = np.arange(gens)
 	fitnesses = np.asarray(popFitness)
-	print(np.size(times), np.size(fitnesses))
 	plt.plot(times, fitnesses)
 	plt.axis([0, gens, 0, max(popFitness)])
 	plt.show()
